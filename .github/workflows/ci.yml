@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync environment
+        run: uv sync --group dev --python ${{ matrix.python-version }}
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Test
+        run: uv run pytest --cov --cov-report=term-missing
+
+  notebooks-clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Fail if notebooks contain stored outputs
+        run: |
+          uv run --with nbstripout python - <<'PY'
+          import json, pathlib, sys
+          offenders = []
+          for nb_path in pathlib.Path("notebooks").rglob("*.ipynb"):
+              nb = json.loads(nb_path.read_text(encoding="utf-8"))
+              if any(c.get("outputs") or c.get("execution_count") for c in nb["cells"]):
+                  offenders.append(str(nb_path))
+          if offenders:
+              print("Notebooks with stored outputs:", *offenders, sep="\n  ")
+              sys.exit(1)
+          print("All notebooks are clean.")
+          PY

@@ -1,0 +1,22 @@
+# Austrian Reanalysis at 2.5 km, Section 4.3.
+# ARA data are available from GeoSphere Austria on request; see the README.
+name: ara_2020
+description: >
+  ARA convection-permitting reanalysis (2.5 km, control member) for 2020,
+  the highest-resolution product in the comparison.
+
+domain:
+  lon_min: 9.0
+  lon_max: 18.0
+  lat_min: 46.0
+  lat_max: 49.5
+  name: ARA domain
+
+period:
+  start: "2020-01-01"
+  end: "2020-12-31"
+
+datasets:
+  - key: ara
+    paths: "ARA/ARA_2020*_Alpine.nc"
+    label: "ARA (2.5 km)"

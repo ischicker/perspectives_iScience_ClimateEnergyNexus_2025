@@ -1,0 +1,66 @@
+cff-version: 1.2.0
+title: "alpinemet: Multi-scale weather and climate data evaluation for Alpine renewable energy"
+message: "If you use this software, please cite both the software and the accompanying paper."
+type: software
+authors:
+  - given-names: Irene
+    family-names: Schicker
+    email: irene.schicker@geosphere.at
+    affiliation: GeoSphere Austria
+  - given-names: Marianne
+    family-names: Bügelmayer-Blaschek
+    affiliation: Austrian Institute of Technology
+  - given-names: Annemarie
+    family-names: Lexer
+    affiliation: GeoSphere Austria
+  - given-names: Katharina
+    family-names: Baier
+    affiliation: Austrian Institute of Technology
+  - given-names: Kristofer
+    family-names: Hasel
+    affiliation: Austrian Institute of Technology
+  - given-names: Paolo
+    family-names: Gazzaneo
+    affiliation: Austrian Institute of Technology
+repository-code: "https://github.com/ischicker/perspectives_iScience_ClimateEnergyNexus_2025"
+license: Apache-2.0
+version: 0.1.0
+keywords:
+  - renewable energy
+  - reanalysis
+  - complex terrain
+  - Alps
+  - digital twin
+  - energy meteorology
+preferred-citation:
+  type: article
+  title: "Beyond resolution: Multi-scale weather and climate data for alpine renewable energy in the digital twin era"
+  authors:
+    - given-names: Irene
+      family-names: Schicker
+      email: irene.schicker@geosphere.at
+      affiliation: GeoSphere Austria
+    - given-names: Marianne
+      family-names: Bügelmayer-Blaschek
+      affiliation: Austrian Institute of Technology
+    - given-names: Annemarie
+      family-names: Lexer
+      affiliation: GeoSphere Austria
+    - given-names: Katharina
+      family-names: Baier
+      affiliation: Austrian Institute of Technology
+    - given-names: Kristofer
+      family-names: Hasel
+      affiliation: Austrian Institute of Technology
+    - given-names: Paolo
+      family-names: Gazzaneo
+      affiliation: Austrian Institute of Technology
+  journal: iScience
+  volume: 29
+  issue: 8
+  start: 116855
+  year: 2026
+  month: 8
+  issn: "2589-0042"
+  doi: "10.1016/j.isci.2026.116855"
+  url: "https://www.sciencedirect.com/science/article/pii/S2589004226022339"

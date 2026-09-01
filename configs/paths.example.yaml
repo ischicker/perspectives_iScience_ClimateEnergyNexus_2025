@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------------------
+# Local paths. Copy to configs/paths.yaml and adjust; paths.yaml is gitignored.
+# Every dataset path in the other configs is resolved relative to `data_root`.
+# ---------------------------------------------------------------------------
+data_root: "/path/to/DATA"
+
+subdirs:
+  era5: "ERA5"
+  era5_land: "ERA5Land"
+  cerra: "CERRA"
+  ara: "ARA"
+  climate_dt: "climate_dt_2020"
+  extremes_dt: "EXTREMES_DT"
+  ifs_ens: "IFS_ENS"
+  aifs: "AIFS"
+  population: "POPULATION_DENSITY"
+  shapefiles: "SHAPEFILES"
+
+# Auxiliary files
+population_raster: "POPULATION_DENSITY/GHS_POP_E2025_ALPINE_WGS84_100m.tif"
+
+# Where results are written (gitignored)
+output_root: "outputs"

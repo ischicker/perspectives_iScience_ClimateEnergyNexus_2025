@@ -1,0 +1,22 @@
+# Destination Earth Climate DT at 4.4 km, Section 4.5.
+# Access requires DESP registration; see the README.
+name: climate_dt_2020_q1
+description: >
+  Climate Digital Twin, January to March 2020. As the paper states, a
+  three-month window is far too short for climate-scale conclusions; it
+  illustrates what km-scale projections can show, nothing more.
+
+domain: alpine
+
+period:
+  start: "2020-01-01"
+  end: "2020-03-31"
+
+datasets:
+  - key: climate_dt
+    paths: "climate_dt_2020/*.nc"
+    label: "Climate DT (4.4 km)"
+
+options:
+  hdd_base_degC: 15.0
+  storm_threshold_ms: 15.0

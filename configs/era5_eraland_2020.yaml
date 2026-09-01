@@ -1,0 +1,26 @@
+# Reanalysis comparison for 2020, Section 4.3 of the paper.
+# Reproduces the ERA5 / ERA5-Land panels of Figure 2.
+name: era5_eraland_2020
+description: >
+  ERA5 (31 km) against ERA5-Land (9 km) over the Alpine domain for 2020,
+  the year used for the reanalysis comparison in the paper.
+
+domain: alpine
+
+period:
+  start: "2020-01-01"
+  end: "2020-12-31"
+
+datasets:
+  - key: era5
+    paths: "ERA5/era5_2020_AT.nc"
+    label: "ERA5 (31 km)"
+  - key: era5_land
+    paths: "ERA5Land/era5land_single_levels_2020_AT_combined.nc"
+    label: "ERA5-Land (9 km)"
+
+options:
+  # Thresholds are illustrative; see the warning in
+  # alpinemet.indicators.dunkelflaute about their sensitivity.
+  heat_day_threshold_degC: 30.0
+  storm_threshold_ms: 17.5

@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# Daten und Ergebnisse gehoeren NICHT ins Repository.
+# Rohdaten: siehe README (CDS, DESP/Polytope, ARA auf Anfrage).
+# Abgeleitete Figuren-Inputs: Zenodo.
+# ---------------------------------------------------------------------------
+*.nc
+*.nc4
+*.grib
+*.grib1
+*.grib2
+*.grb
+*.zarr/
+*.parquet
+*.tif
+*.tiff
+*.7z
+*.zip
+*.pkl
+*.pickle
+
+# Die abgeleiteten Figuren-Eingangsfelder sind klein (rund 2 MB) und gehoeren
+# bewusst ins Repository: so laesst sich jede Abbildung aus einem Klon
+# reproduzieren, und der Zenodo-Release archiviert sie automatisch mit.
+!figure_inputs/
+!figure_inputs/**
+
+# Ergebnis- und Laufzeitverzeichnisse
+results/
+results_*/
+alpine_analysis_output/
+quickstart_results*/
+multi_dataset_comparison_results/
+figures/
+outputs/
+*.log
+
+# Zugangsdaten
+.cdsapirc
+.polytopeapirc
+*.token
+.env
+.env.*
+secrets.yaml
+configs/paths.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

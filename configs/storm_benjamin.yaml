@@ -1,0 +1,28 @@
+# Storm Benjamin case study, Section 4.4 and Figure 3.
+# Forecasts initialised 23 October 2025, T+0 to T+36 h.
+name: storm_benjamin
+description: >
+  Three forecast products for Storm Benjamin at differing resolution:
+  IFS ENS control (9 km), Extremes DT (4.4 km) and AIFS (~31 km).
+
+domain:
+  lon_min: 5.0
+  lon_max: 19.0
+  lat_min: 45.5
+  lat_max: 50.0
+  name: Storm Benjamin domain
+
+period:
+  start: "2025-10-23"
+  end: "2025-10-24"
+
+datasets:
+  - key: ifs
+    paths: "IFS_ENS/ENS_IFS_Benjamin_20251023.nc"
+    label: "IFS ENS control (9 km)"
+  - key: extremes_dt
+    paths: "EXTREMES_DT/extremesDT_stormBenjamin_20251023_alps0p04deg.nc"
+    label: "Extremes DT (4.4 km)"
+  - key: aifs
+    paths: "AIFS/AIFS_20251023.nc"
+    label: "AIFS (~31 km)"

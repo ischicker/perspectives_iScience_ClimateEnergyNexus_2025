@@ -1,0 +1,14 @@
+alpinemet
+Copyright 2026 GeoSphere Austria
+
+This product includes software developed at GeoSphere Austria and the Austrian
+Institute of Technology as part of the Digital Twin Austria project HectoRenew
+(FO999918390) and the Austrian Climate Research Programme project EnergyProtect
+(FO999901419).
+
+Gust estimation follows Wieringa (1973), adapted for energy applications by
+Schicker and Meirold-Mautner (2022). Degree-day definitions follow VDI 3787.
+Compound event classification follows the typology of Zscheischler et al. (2020).
+
+Access to the Destination Earth Digital Twins follows the example workflows
+published by ECMWF; those upstream notebooks are not redistributed here.
