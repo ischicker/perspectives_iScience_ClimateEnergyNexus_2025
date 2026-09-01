@@ -59,6 +59,9 @@ class DatasetSpec:
         :func:`alpinemet.energy.wind.extrapolate_to_hub_height`.
     extra_aliases
         Product-specific variable names not covered by the shared vocabulary.
+    reset_hours, reset_offset
+        Accumulation block length and its phase, for products whose running
+        accumulators restart periodically.
     notes
         Free-text caveats worth carrying into output metadata.
     """
@@ -72,6 +75,8 @@ class DatasetSpec:
     has_native_gust: bool = False
     has_100m_wind: bool = False
     extra_aliases: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
+    reset_hours: float | None = None
+    reset_offset: int = 0
     notes: str = ""
 
     def accumulation_kind(self, canonical: str) -> AccumulationKind:
@@ -124,6 +129,8 @@ _SPECS: tuple[DatasetSpec, ...] = (
         },
         has_native_gust=False,
         has_100m_wind=False,
+        reset_hours=24,
+        reset_offset=1,
         notes=(
             "Accumulators reset at 00 UTC daily; the reset step is reported as zero. "
             "Harmless for radiation, which is zero overnight, but it removes the "
@@ -150,12 +157,18 @@ _SPECS: tuple[DatasetSpec, ...] = (
         resolution_km=2.5,
         timestep_hours=1.0,
         grid_type="rotated_latlon",
+        # 'grad' accumulates over three-hour blocks, not per step: the hourly
+        # means run 1x, 2x, 3x of the true flux and then reset. Verified on the
+        # 2020 subset, where treating it as PERIOD inflates two hours in three
+        # and produces values above 2200 W/m2.
         accumulation={
-            "solar_radiation": AccumulationKind.PERIOD,
-            "precipitation": AccumulationKind.PERIOD,
+            "solar_radiation": AccumulationKind.RUNNING,
+            "precipitation": AccumulationKind.RUNNING,
         },
         has_native_gust=True,
         has_100m_wind=True,
+        reset_hours=3,
+        reset_offset=1,
         # ARA uses its own short names and 'lat'/'lon' coordinates. 'grad' is
         # global radiation accumulated in Ws/m2, i.e. J/m2. 't' is the 2 m
         # temperature: it is the only temperature in the ARA surface product,

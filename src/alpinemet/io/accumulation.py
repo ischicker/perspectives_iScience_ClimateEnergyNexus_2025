@@ -175,6 +175,8 @@ def to_rate(
     time_dim: str = "time",
     timestep_seconds: float | None = None,
     per_second: bool = True,
+    reset_hours: float | None = None,
+    reset_offset: int = 0,
     output_units: str | None = None,
     clip_negative: bool = True,
 ) -> xr.DataArray:
@@ -205,6 +207,17 @@ def to_rate(
     per_second
         Divide by the step length. True for energy fluxes such as radiation,
         false for per-step totals such as precipitation.
+    reset_hours
+        Length of the accumulation block for :attr:`AccumulationKind.RUNNING`,
+        in hours -- 24 for a daily reset, 3 for ARA radiation. When given, block
+        starts are identified from the clock rather than from a drop in value.
+        That matters: a new block often starts *above* where the previous one
+        ended (radiation through the morning), so a sign test alone misses the
+        reset and doubles that step. Falls back to sign detection when omitted.
+    reset_offset
+        Hour at which the first block of the day begins, modulo
+        reset_hours. ARA blocks start at 01, 04, 07 UTC and so on, so its
+        offset is 1.
     output_units
         Units string recorded on the result, e.g. ``"W m-2"``.
     clip_negative
@@ -246,17 +259,33 @@ def to_rate(
             converted = data / divisor
             method = "divide by time step" if per_second else "already per step"
         else:  # RUNNING
-            differenced = data.diff(time_dim) / divisor
-            # diff drops the first step; reinstate it as zero so the time axis
-            # is preserved. The first step of a running accumulator has no
-            # predecessor and therefore no defined increment.
-            first = xr.zeros_like(data.isel({time_dim: 0}))
-            converted = xr.concat([first, differenced], dim=time_dim)
-            converted = converted.assign_coords({time_dim: data[time_dim]})
+            differenced = data.diff(time_dim)
+            # diff drops the first step; it has no predecessor, so its own value
+            # is the increment.
+            first = data.isel({time_dim: 0})
+            increments = xr.concat([first, differenced], dim=time_dim)
+            increments = increments.assign_coords({time_dim: data[time_dim]})
+
+            # At a reset the accumulator restarts, so the difference is the new
+            # value minus the old total: large and negative. The increment for
+            # that step is simply the raw value. Detecting the reset this way
+            # rather than clipping it to zero keeps the step instead of losing
+            # it -- which matters when the reset period is short. ARA resets its
+            # radiation accumulator every three hours, so clipping would discard
+            # one hour in three.
+            if reset_hours is None:
+                # No declared block length: fall back to spotting the drop.
+                reset = increments < 0
+            else:
+                hours = data[time_dim].dt.hour
+                reset = ((hours - reset_offset) % int(reset_hours)) == 0
+            increments = xr.where(reset, data, increments)
+
+            converted = increments / divisor
             method = (
-                "difference then divide by time step"
+                "deaccumulate with reset detection, then divide by time step"
                 if per_second
-                else "difference between steps"
+                else "deaccumulate with reset detection"
             )
 
         if clip_negative:

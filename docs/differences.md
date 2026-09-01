@@ -243,6 +243,29 @@ physical field.
 Both observations are properties of this subset, not of the analysis code, and
 are worth raising with the ARA producers before the derived fields are reused.
 
+### ARA radiation accumulates over three-hour blocks
+
+ARA stores global radiation (, in Ws/m2) as a running total within
+three-hour blocks that begin at 01, 04, 07 UTC and so on -- not as a per-step
+accumulation. Dividing each hourly value by 3600, the natural reading of the
+unit on hourly output, inflates the second and third hour of every block by
+factors of two and three.
+
+July hourly means at one grid point:
+
+| Hour (UTC) | 07 | 08 | 09 | 10 | 11 | 12 | 13 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Naive division | 334 | 809 | 1406 | 679 | 1365 | 2052 | 612 |
+| Deaccumulated | 351 | 503 | 606 | 702 | 695 | 686 | 614 |
+
+The naive reading gives a sawtooth peaking above 2000 W/m2 in a *monthly mean*.
+Deaccumulated, the cycle is smooth and peaks at about 700 W/m2.
+
+The block length has to be declared rather than inferred: through a summer
+morning a new block often opens *above* the previous block total, so the
+difference stays positive and a sign test misses the reset. The dataset
+specification carries  and  for this.
+
 ### ARA monthly files overlap
 
 Consecutive ARA monthly files share timestamps at their boundaries — 30

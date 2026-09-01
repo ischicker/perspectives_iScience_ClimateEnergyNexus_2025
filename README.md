@@ -24,7 +24,7 @@ practice, every product speaks its own dialect:
 |---|---|---|---|---|---|
 | 2 m temperature | `var167`, K | `t2m`, K | `t`, K | `2t`, K | `t2m`, K |
 | 10 m wind | `var165`/`var166` | `u10`/`v10` | `u10m`/`v10m` | `10u`/`10v` | `u10`/`v10` |
-| Radiation | J/m², per step | J/m², **daily reset** | Ws/m², per step | J/m², per step | J/m², from init |
+| Radiation | J/m², per step | J/m², **daily reset** | Ws/m², **3 h blocks** | J/m², per step | J/m², from init |
 | Precipitation | **metres** | **metres**, daily reset | kg/m² | kg/m² | m, from init |
 | Latitude axis | descending | descending | ascending | ascending | scattered |
 | Native gust | no | no | `gust10m` | `i10fg` | no |
@@ -99,8 +99,10 @@ The tests exist mostly to pin these down.
   the diurnal cycle as demand: a symmetric swing about the base temperature yields zero degree
   days the correct way and roughly 76 per month the wrong way.
 - **Accumulation is declared, not inferred.** ERA5 accumulates over each step, ERA5-Land from a
-  daily reset. Guessing this from value ranges is unreliable — a clear Alpine summer day
-  averages about 900,000 J/m² per hour, above the bands such heuristics assume.
+  daily reset, ARA radiation over three-hour blocks. Guessing this from value ranges is
+  unreliable — a clear Alpine summer day averages about 900,000 J/m² per hour, above the bands
+  such heuristics assume — and a reset cannot be spotted from a drop in value either, because a
+  new block often opens above where the previous one ended.
 - **Gusts come from `i10fg` where it exists.** Only ERA5, ERA5-Land and AIFS need estimation,
   which uses Wieringa (1973). Every gust field records its `gust_source`, because estimated and
   native gusts are not interchangeable at the ESSL thresholds.

@@ -126,6 +126,8 @@ def standardise(
             kind,
             timestep_seconds=spec.timestep_hours * 3600.0,
             per_second=canonical in PER_SECOND_VARIABLES,
+            reset_hours=spec.reset_hours,
+            reset_offset=spec.reset_offset,
             output_units=ACCUMULATION_OUTPUT_UNITS.get(canonical),
         )
 

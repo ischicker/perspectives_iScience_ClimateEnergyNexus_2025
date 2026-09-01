@@ -103,11 +103,16 @@ def test_the_daily_reset_is_clipped_not_propagated():
     assert converted.values[24] == 0.0
 
 
-def test_disabling_the_clip_exposes_the_reset():
+def test_the_reset_is_detected_rather_than_clipped_away():
+    """Detection keeps the reset step; clipping would have thrown it away."""
     day = np.cumsum(DIURNAL_FLUX) * 3600.0
     running = _hourly(np.concatenate([day, day]))
+
     converted = to_rate(running, AccumulationKind.RUNNING, clip_negative=False)
-    assert float(converted.min()) < 0.0
+
+    assert float(converted.min()) >= 0.0, "no negative jump should survive"
+    # Hour 24 restarts the accumulator; its increment is its own raw value.
+    assert converted.values[24] == pytest.approx(DIURNAL_FLUX[0])
 
 
 # --------------------------------------------------------------------------
@@ -240,3 +245,79 @@ def test_the_choice_is_recorded():
     assert decode_attribute(total.attrs["per_second"]) is False
     assert decode_attribute(flux.attrs["per_second"]) is True
     assert total.attrs["conversion_method"] == "already per step"
+
+
+# --------------------------------------------------------------------------
+# Accumulators that reset on a short block
+# --------------------------------------------------------------------------
+
+
+def _three_hourly_blocks(true_flux: np.ndarray, offset: int = 1) -> xr.DataArray:
+    """Accumulate a flux into three-hour blocks starting at hours 1, 4, 7, ...
+
+    This is how ARA stores global radiation: the stored value is the running
+    total since the start of the block, so the hourly means run 1x, 2x, 3x of
+    the true flux and then reset.
+    """
+    time = pd.date_range("2020-07-01", periods=true_flux.size, freq="h")
+    stored = np.zeros_like(true_flux)
+    running = 0.0
+    for index, hour in enumerate(time.hour):
+        if (hour - offset) % 3 == 0:
+            running = 0.0
+        running += true_flux[index] * 3600.0
+        stored[index] = running
+    return xr.DataArray(stored, dims="time", coords={"time": time})
+
+
+def test_a_three_hour_block_accumulator_is_recovered():
+    """The ARA radiation case: declared block length recovers the true flux."""
+    true_flux = np.tile(DIURNAL_FLUX, 3)
+    stored = _three_hourly_blocks(true_flux)
+
+    recovered = to_rate(stored, AccumulationKind.RUNNING, reset_hours=3, reset_offset=1)
+
+    np.testing.assert_allclose(recovered.values, true_flux, atol=1e-6)
+
+
+def test_sign_detection_alone_misses_a_rising_block_boundary():
+    """Why the block length has to be declared rather than inferred.
+
+    A reset is missed whenever the first value of the new block exceeds the
+    whole total of the previous one -- the difference stays positive and looks
+    like an ordinary increment. Through a summer morning that is the normal
+    case: in the ARA subset the 07 UTC block opens at 351 W/m2 against a 04-06
+    block totalling 318, so the 07 UTC increment is recorded as 33 instead.
+    """
+    morning = np.array([0.0, 0.0, 0.0, 11.0, 92.0, 215.0, 351.0, 503.0, 606.0,
+                        702.0, 695.0, 686.0])
+    stored = _three_hourly_blocks(morning)
+
+    declared = to_rate(stored, AccumulationKind.RUNNING, reset_hours=3, reset_offset=1)
+    inferred = to_rate(stored, AccumulationKind.RUNNING)
+
+    np.testing.assert_allclose(declared.values, morning, atol=1e-6)
+
+    # Blocks open at 01, 04, 07 UTC. At 04 the new block starts at 92 while the
+    # 01-03 block totalled only 11, so the difference is a plausible-looking
+    # +81 and the reset passes unnoticed.
+    assert inferred.values[4] == pytest.approx(92.0 - 11.0, abs=0.5)
+    assert not np.allclose(inferred.values, morning, atol=1.0)
+
+
+def test_a_declared_daily_reset_keeps_the_first_hour():
+    """ERA5-Land resets at 00 UTC; that hour must not be lost."""
+    true_flux = np.tile(DIURNAL_FLUX, 2)
+    time = pd.date_range("2020-06-21", periods=true_flux.size, freq="h")
+    stored = np.concatenate([np.cumsum(DIURNAL_FLUX), np.cumsum(DIURNAL_FLUX)]) * 3600.0
+    running = xr.DataArray(stored, dims="time", coords={"time": time})
+
+    recovered = to_rate(running, AccumulationKind.RUNNING, reset_hours=24, reset_offset=0)
+
+    np.testing.assert_allclose(recovered.values, true_flux, atol=1e-6)
+
+
+def test_the_reset_convention_is_recorded():
+    stored = _three_hourly_blocks(np.tile(DIURNAL_FLUX, 2))
+    converted = to_rate(stored, AccumulationKind.RUNNING, reset_hours=3, reset_offset=1)
+    assert "reset detection" in converted.attrs["conversion_method"]
